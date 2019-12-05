@@ -44,7 +44,66 @@ export TF_VAR_scw_secret_key="<YOUR_SCW_SECRET_KEY>"
 export TF_VAR_scw_org_id="<YOUR_SCW_API_KEY>" # Optional
 ```
 
-Content file of `terraform.tfvars`
+Content file `main.tf`
+```
+provider "scaleway" {
+  access_key = var.scw_api_key
+  secret_key = var.scw_secret_key
+  organization_id = var.scw_org_id 
+  zone       = var.scw_zone
+  region     = var.scw_region
+  version = "~> 1.11"
+}
+
+module "database" {
+  source = "./modules/replicator"
+  module_name = "database"
+  project = var.project
+  cluster = var.cluster
+  region = var.scw_region
+
+  conf = var.infra.database
+  services = var.services
+  networks = var.networks
+
+  ips = {
+    web = module.web.nodes
+  }
+}
+
+module "proxy" {
+  source = "./modules/replicator"
+  module_name = "proxy"
+  project = var.project
+  cluster = var.cluster
+  region = var.scw_region
+
+  conf = var.infra.proxy
+  services = var.services
+  networks = var.networks
+
+  ips = {
+    web = module.web.nodes
+  }
+}
+
+module "web" {
+  source = "./modules/replicator"
+  module_name = "web"
+  project = var.project
+  cluster = var.cluster
+  region = var.scw_region
+
+  conf = var.infra.web
+  services = var.services
+  networks = var.networks
+
+
+  ips = {}
+}
+```
+
+Content file `terraform.tfvars`
 ```
 # scw region
 scw_region = "fr-par"
@@ -296,4 +355,91 @@ Security Group auto create and linked with your service description
 ```
 
 
+### All in single node
 
+
+Content file `main.tf`
+```
+provider "scaleway" {
+  access_key = var.scw_api_key
+  secret_key = var.scw_secret_key
+  organization_id = var.scw_org_id 
+  zone       = var.scw_zone
+  region     = var.scw_region
+  version = "~> 1.11"
+}
+
+module "allInOne" {
+  source = "./modules/replicator"
+  module_name = "allInOne"
+  project = var.project
+  cluster = var.cluster
+  region = var.scw_region
+
+  conf = var.infra.allInOne
+  services = var.services
+  networks = var.networks
+
+  ips = {}
+}
+```
+
+Content file `terraform.tfvars`
+```
+# scw region
+scw_region = "fr-par"
+
+# scw zone
+scw_zone = "fr-par-1"
+
+# project name
+project = "default"
+
+# cluster id
+cluster = 1
+
+# define your infrastructure
+infra = {
+  allInOne = {
+    scale = 1
+    public_ip = false
+    image = "<YOUR_SCW_IMAGE_ID>"
+    type = "DEV1-S"
+    services = [ "psql", "wordpress", "nginx" ]
+  },
+}
+
+## define the networks link services 
+services = {
+  nginx = {
+    networks = ["public"]
+  }
+  wordpress = {
+    networks = []
+  }
+  psql = {
+    networks = []
+  }
+
+}
+
+## define each network
+networks = {
+  public = {
+    all = [
+      {
+        action = "accept"
+        port = 80
+        interface = "address"
+      },
+      {
+        action = "accept"
+        port = 443
+        interface = "address"
+      }
+    ]
+    in = []
+    out = []
+  }
+}
+```
