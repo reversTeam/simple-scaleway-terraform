@@ -48,7 +48,7 @@ locals {
           for k, instance in scaleway_instance_server.instances : {
             action = rule.action
             port = rule.port
-            ip = rule.interface == "address" ? "0.0.0.0" : rule.interface == "public" ? instance.public_ip : instance.private_ip
+            ip = rule.interface == "address" ? "0.0.0.0/0" : rule.interface == "public" ? instance.public_ip : instance.private_ip
           }
         ]
       ] if contains(keys(var.networks), network)
@@ -62,10 +62,10 @@ locals {
           for k, instance in scaleway_instance_server.instances : {
             action = rule.action
             port = rule.port
-            ip = rule.interface == "address" ? "0.0.0.0" : rule.interface == "public" ? instance.public_ip : instance.private_ip
+            ip = rule.interface == "address" ? "0.0.0.0/0" : rule.interface == "public" ? instance.public_ip : instance.private_ip
           }
         ]
-      ]  if contains(keys(var.networks), network)
+      ] if contains(keys(var.networks), network)
     ]
   ])
 
@@ -76,10 +76,10 @@ locals {
           for k, instance in scaleway_instance_server.instances : {
             action = rule.action
             port = rule.port
-            ip = rule.interface == "address" ? "0.0.0.0" : rule.interface == "public" ? instance.public_ip : instance.private_ip
+            ip = rule.interface == "address" ? "0.0.0.0/0" : rule.interface == "public" ? instance.public_ip : instance.private_ip
           }
         ]
-      ]  if contains(keys(var.networks), network)
+      ] if contains(keys(var.networks), network)
     ]
   ])
 
@@ -92,21 +92,21 @@ locals {
 
 resource "scaleway_security_group_rule" "self_inbound" {
   count = length(local.self_inbound)
-  security_group = "${scaleway_security_group.security_group.id}"
+  security_group = scaleway_security_group.security_group.id
 
   action    = local.self_inbound[count.index].action
   direction = "inbound"
-  ip_range  = local.self_outbound[count.index].ip
+  ip_range  = local.self_inbound[count.index].ip
   protocol  = "TCP"
   port      = local.self_inbound[count.index].port
 }
 
 resource "scaleway_security_group_rule" "self_outbound" {
   count = length(local.self_outbound)
-  security_group = "${scaleway_security_group.security_group.id}"
+  security_group = scaleway_security_group.security_group.id
 
   action    = local.self_outbound[count.index].action
-  direction = "inbound"
+  direction = "outbound"
   ip_range  = local.self_outbound[count.index].ip
   protocol  = "TCP"
   port      = local.self_outbound[count.index].port
@@ -114,10 +114,10 @@ resource "scaleway_security_group_rule" "self_outbound" {
 
 resource "scaleway_security_group_rule" "services_outbound" {
   count = length(local.services_outbound)
-  security_group = "${scaleway_security_group.security_group.id}"
+  security_group = scaleway_security_group.security_group.id
 
   action    = local.services_outbound[count.index].action
-  direction = "inbound"
+  direction = "outbound"
   ip_range  = local.services_outbound[count.index].ip
   protocol  = "TCP"
   port      = local.services_outbound[count.index].port
@@ -125,7 +125,7 @@ resource "scaleway_security_group_rule" "services_outbound" {
 
 resource "scaleway_security_group_rule" "services_inbound" {
   count = length(local.services_inbound)
-  security_group = "${scaleway_security_group.security_group.id}"
+  security_group = scaleway_security_group.security_group.id
 
   action    = local.services_inbound[count.index].action
   direction = "inbound"

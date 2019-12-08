@@ -25,7 +25,7 @@ resource "scaleway_instance_server" "instances" {
     host        = self.public_ip
   }
 
-  security_group_id= scaleway_security_group.security_group.id
+  security_group_id = scaleway_security_group.security_group.id
 }
 
 output "address" {
