@@ -15,21 +15,21 @@ infra = {
   proxy = {
     scale = 1
     public_ip = true
-    image = "16adb3bb-3ec0-464a-b265-9b6234e483ca"
+    image = "a0702ada-05bf-4f0d-9390-872935080649"
     type = "DEV1-S"
     services = [ "nginx" ]
   },
   web = {
-    scale = 1
+    scale = 3
     public_ip = false
-    image = "16adb3bb-3ec0-464a-b265-9b6234e483ca"
+    image = "a0702ada-05bf-4f0d-9390-872935080649"
     type = "DEV1-S"
     services = [ "wordpress" ] 
   },
   database = {
     scale = 1
     public_ip = false
-    image = "16adb3bb-3ec0-464a-b265-9b6234e483ca"
+    image = "a0702ada-05bf-4f0d-9390-872935080649"
     type = "DEV1-S"
     services = [ "psql" ]
   },
@@ -38,13 +38,13 @@ infra = {
 ## define the networks link services 
 services = {
   nginx = {
-    networks = ["public",  "web"]
+    networks = ["public",  "web", "ssh_public"]
   }
   wordpress = {
-    networks = ["web", "database"]
+    networks = ["web", "database", "ssh_private"]
   }
   psql = {
-    networks = ["database"]
+    networks = ["database", "ssh_private"]
   }
 
 }
@@ -88,5 +88,27 @@ networks = {
     ]
     in = []
     out = []
-  }
+  },
+  ssh_public = {
+    all = [
+      {
+        action = "accept"
+        port = 22
+        interface = "address"
+      } 
+    ]
+    in = []
+    out = []
+  },
+  ssh_private = {
+    all = [
+      {
+        action = "accept"
+        port = 22
+        interface = "private"
+      } 
+    ]
+    in = []
+    out = []
+  },
 }
