@@ -85,8 +85,8 @@ module "database" {                       // Name of pool type
   networks = var.networks                 // The global configuration for each network, use by services (cf. terraform.tfvars)
 
   pools = {
-    web = module.web.nodes
-    proxy = module.database.nodes
+    web = module.web.nodes                // Transmitted the instance setup by the web module
+    proxy = module.database.nodes         // Transmitted the instance setup by the proxy module
   }
 }
 
@@ -109,7 +109,7 @@ cluster = 1
 ```
 
 
-# Define your infrastructure
+## Define your infrastructure
 The infrastructure is required for discribe your node type (beacause it's scalable), and what service are installed on them.
 ```
 infra = {
