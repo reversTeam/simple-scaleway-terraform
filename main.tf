@@ -14,12 +14,13 @@ module "database" {
   cluster = var.cluster
   region = var.scw_region
 
-  conf = var.infra.database
+  infra = var.infra
   services = var.services
   networks = var.networks
 
-  ips = {
+  pools = {
     web = module.web.nodes
+    proxy = module.database.nodes
   }
 }
 
@@ -30,12 +31,13 @@ module "proxy" {
   cluster = var.cluster
   region = var.scw_region
 
-  conf = var.infra.proxy
+  infra = var.infra
   services = var.services
   networks = var.networks
 
-  ips = {
+  pools = {
     web = module.web.nodes
+    database = module.database.nodes
   }
 }
 
@@ -46,10 +48,13 @@ module "web" {
   cluster = var.cluster
   region = var.scw_region
 
-  conf = var.infra.web
+  infra = var.infra
   services = var.services
   networks = var.networks
 
 
-  ips = {}
+  pools = {
+    database = module.database.nodes
+    proxy = module.database.nodes
+  }
 }
