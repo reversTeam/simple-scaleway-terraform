@@ -1,5 +1,9 @@
+locals {
+  conf = var.infra[var.module_name]
+}
+
 resource "scaleway_instance_ip" "ip" {
-  count = var.conf.public_ip ? var.conf.scale : 0
+  count = local.conf.public_ip ? local.conf.scale : 0
   server_id = scaleway_instance_server.instances[count.index].id
 }
 
@@ -12,9 +16,9 @@ resource "scaleway_security_group" "security_group" {
 
 resource "scaleway_instance_server" "instances" {
   name = "${var.project}-${var.module_name}-${var.region}-c${var.cluster}n${count.index + 1}"
-  count = var.conf.scale
-  type = var.conf.type
-  image = var.conf.image
+  count = local.conf.scale
+  type = local.conf.type
+  image = local.conf.image
 
   tags = []
 

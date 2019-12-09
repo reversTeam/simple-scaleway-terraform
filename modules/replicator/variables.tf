@@ -17,19 +17,22 @@ variable "project" {
   default = "default"
 }
 
-variable "conf" {
-  type = object({
+variable "infra" {
+  type = map(object({
     scale = number
     image = string
     type = string
     services = list(string)
     public_ip = bool
-  })
+  }))
 }
 
 variable "services" {
   type = map(object({
-    networks = list(string)
+    networks = object({
+        hosted = list(string)
+        linked = list(string)
+    })
   }))
 }
 
@@ -53,4 +56,4 @@ variable "networks" {
   }))
 }
 
-variable "ips" {}
+variable "pools" {}
