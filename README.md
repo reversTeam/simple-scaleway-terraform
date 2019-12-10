@@ -1,6 +1,11 @@
-# simple-scaleway-terraform
+# Start quickly with terraform on Scaleway
 
-Start Quickly with Scaleway Terraform
+Simple Scaleway Terraform aims to abstract terraform in order to simplify the handling.
+
+I'm not sure that everything is good to take, I learn terraform myself while I do this rest. But I think it might help other people understand terraform, and the Scaleway platform.
+
+Here is the nomenclature of the project this one is only an example not structuring for the moment.
+You will need to modify the following files: `main.tf` and` terraform.tfvars` to suit your needs
 ```
 ├── README.md
 ├── main.tf
@@ -15,10 +20,8 @@ Start Quickly with Scaleway Terraform
 
 ## Why this project ?
 
- - Because I start using terraform
- - Because it's fun
- - Because terraform on scaleway need to has more accessible
- - Because why not
+I wanted to start with terraform, I realized that the sources of information about Scaleway are not yet sufficiently accessible.
+I also think that the subject could motivate some of you to improve this model, or even to invalidate it quickly.
 
 
 ## What is it ?
@@ -35,7 +38,6 @@ The goal is start quickly your infrastructure and abstract networks rules with a
     - Setup access key / secret key
     - Export access key / secret key
 
-
 Export SCW terraform configuration
 ```
 export TF_VAR_scw_api_key="<YOUR_SCW_API_KEY>"
@@ -50,6 +52,98 @@ $> terraform init
 $> terraform plan         # no cost, just show the deploying result
 $> terraform apply        # this action deploy your infrastructure on Scaleway, see the scaleway pricing before run
 ```
+
+### TIPS:
+With a `backend.tf` file you can then store your terraform states remotely, as in Scaleway s3. (free offer for the first 75 GB, storage and bandwidth).
+
+```
+terraform {
+  backend "s3" {
+    bucket      = "your-bucket-name"
+    key         = "your-infrastructure-name.tfstate"
+    region      = "fr-par"                               # ["fr-par" or "nl-ams", warsovie in next time]
+    endpoint    = "https://s3.fr-par.scw.cloud"          # warning : region is redonded on the endpoint value
+    access_key = "your_access_key"                       # generate token on https://console.scaleway.com
+    secret_key = "your_secret_key" 
+    skip_credentials_validation = true
+    skip_region_validation = true
+  }
+}
+```
+
+You will also be able to integrate terraform directly into your pipeline. Here is an example of an internship for `gitlab_ci.yml`. These lines allow to run the tests, only if the terraform file changes and if it is submitted on master.
+These lines will have to be adapted to your use.
+```
+image: golang:latest
+
+variables:
+  REPO_NAME: github.com/reversTeam/simple-scaleway-terraform
+  ARTIFACTS_DIR: artifacts
+  BINARY_FILE: ffs
+  TERRAFORM_VERSION: "0.12.17"
+
+before_script:
+    - apt-get update
+    - apt-get install -y unzip libprotobuf-dev protobuf-compiler
+    ## Install go environment
+    - go get -u github.com/golang/dep/cmd/dep
+    - go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
+
+    ## Install Terraform
+    - cd /tmp
+    - wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+    - unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+    - mv terraform /usr/local/bin/
+    - cd $CI_PROJECT_DIR/terraform
+    - terraform init
+
+stages:
+  - validate
+  - plan
+  - apply
+
+validate:
+  stage: validate
+  script:
+    - cd $CI_PROJECT_DIR/terraform
+    - terraform validate
+  only:
+    refs:
+      - master
+    changes:
+      - terraform/**/*
+
+plan:
+  stage: plan
+  script:
+    - cd $CI_PROJECT_DIR/terraform
+    - terraform plan -out "planfile"
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/terraform/planfile
+  dependencies:
+    - validate
+  only:
+    refs:
+      - master
+    changes:
+      - terraform/**/*
+
+apply:
+  stage: apply
+  script:
+    - cd $CI_PROJECT_DIR/terraform
+    - terraform apply -input=false "planfile"
+  dependencies:
+    - plan
+  when: manual
+  only:
+    refs:
+      - master
+    changes:
+      - terraform/**/*
+```
+
 
 ## Example
 
@@ -106,6 +200,34 @@ project = "default"
 
 # cluster id
 cluster = 1
+
+[...]
+
+# services
+service = {
+  "${service_name}" = { # quoted for exposed vars, need remove this "${}"
+    networks = {
+       hosted = ["x", "y"]
+      linked = ["z"]
+    }
+  }
+  #[...]
+}
+# networks
+networks = {
+  x = { # like used network in "${service_name}"
+    all = [
+      {
+        action = "accept|drop"
+        port = 80
+        interface = "address|public|address|or real ip 123.45.67.89/32"
+      },
+      #[...]
+    ]
+    in = []
+    out = []
+  },
+}
 ```
 
 
