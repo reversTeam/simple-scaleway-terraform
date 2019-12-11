@@ -201,7 +201,10 @@ project = "default"
 # cluster id
 cluster = 1
 
-[...]
+# ssh key path without passphrase
+keypath = "~/.ssh/deployment"
+
+# [...]
 
 # services
 service = {

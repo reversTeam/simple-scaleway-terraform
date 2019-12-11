@@ -17,6 +17,7 @@ module "database" {
   infra = var.infra
   services = var.services
   networks = var.networks
+  keypath = var.keypath
 
   pools = {
     web = module.web.nodes
@@ -34,6 +35,7 @@ module "proxy" {
   infra = var.infra
   services = var.services
   networks = var.networks
+  keypath = var.keypath
 
   pools = {
     web = module.web.nodes
@@ -51,7 +53,7 @@ module "web" {
   infra = var.infra
   services = var.services
   networks = var.networks
-
+  keypath = var.keypath
 
   pools = {
     database = module.database.nodes

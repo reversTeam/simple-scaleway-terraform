@@ -17,6 +17,11 @@ variable "project" {
   default = "default"
 }
 
+variable "keypath" {
+  type = string
+  default = "~/.ssh/deployment"
+}
+
 variable "infra" {
   type = map(object({
     scale = number

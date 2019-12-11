@@ -23,6 +23,10 @@ variable "project" {
   type = string
   default = "ffs"
 }
+variable "keypath" {
+  type = string
+  default = "~/.ssh/deployment"
+}
 
 variable "infra" {
   type = map(object({

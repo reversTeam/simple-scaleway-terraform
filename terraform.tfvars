@@ -10,6 +10,9 @@ project = "default"
 # cluster id
 cluster = 1
 
+# ssh key path without passphrase
+keypath = "~/.ssh/deployment"
+
 # define your infrastructure
 infra = {
   proxy = {
