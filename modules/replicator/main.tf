@@ -20,8 +20,8 @@ resource "scaleway_instance_ip" "ip" {
 resource "scaleway_security_group" "security_group" {
   name = "${var.project}-${var.module_name}-${var.region}-c${var.cluster}"
   description = "Allow all network configuration for ${var.cluster}"
-  inbound_default_policy  = "accept"
-  outbound_default_policy = "accept"
+  inbound_default_policy  = "drop"
+  outbound_default_policy = "drop"
 }
 
 resource "scaleway_instance_server" "instances" {

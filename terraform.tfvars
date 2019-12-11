@@ -18,21 +18,21 @@ infra = {
   proxy = {
     scale = 1
     public_ip = true
-    image = "<IMAGE_ID>"
+    image = "b381b2bf-804a-4b12-91f6-9f4ff273462f"
     type = "DEV1-S"
     services = [ "nginx" ]
   },
   web = {
-    scale = 3
+    scale = 0
     public_ip = false
-    image = "<IMAGE_ID>"
+    image = "b381b2bf-804a-4b12-91f6-9f4ff273462f"
     type = "DEV1-S"
     services = [ "wordpress" ] 
   },
   database = {
-    scale = 1
+    scale = 0
     public_ip = false
-    image = "<IMAGE_ID>"
+    image = "b381b2bf-804a-4b12-91f6-9f4ff273462f"
     type = "DEV1-S"
     services = [ "psql" ]
   },
