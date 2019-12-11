@@ -30,6 +30,9 @@ It's a simple module for improve your experience with terraform on scaleway, I j
 
 The goal is start quickly your infrastructure and abstract networks rules with a simple configuration.
 
+Generated Terraform Graph:
+![Generated Graph](assets/img/graph.svg)
+
 
 ## Requirement
 
