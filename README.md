@@ -241,7 +241,8 @@ networks = {
   },
 }
 ```
-
+Normaly you have your a cluster on Scaleway.
+![Cluster](assets/img/cluster.jpg)
 
 ## Define your infrastructure
 The infrastructure is required for discribe your node type (beacause it's scalable), and what service are installed on them.
@@ -317,3 +318,7 @@ networks = {
   },
 }
 ```
+
+
+## The potential
+![Potential infrastructure](assets/img/final.jpg)
