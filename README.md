@@ -39,7 +39,7 @@ The goal is start quickly your infrastructure and abstract networks rules with a
     - Export access key / secret key
 
 Export SCW terraform configuration
-```
+```sh
 export TF_VAR_scw_api_key="<YOUR_SCW_API_KEY>"
 export TF_VAR_scw_secret_key="<YOUR_SCW_SECRET_KEY>"
 export TF_VAR_scw_org_id="<YOUR_SCW_API_KEY>" # Optional
@@ -47,16 +47,16 @@ export TF_VAR_scw_org_id="<YOUR_SCW_API_KEY>" # Optional
 
 Update the image id in `terraform.tfvars`
 
-```
-$> terraform init
-$> terraform plan         # no cost, just show the deploying result
-$> terraform apply        # this action deploy your infrastructure on Scaleway, see the scaleway pricing before run
+```sh
+terraform init
+terraform plan         # no cost, just show the deploying result
+terraform apply        # this action deploy your infrastructure on Scaleway, see the scaleway pricing before run
 ```
 
 ### TIPS:
 With a `backend.tf` file you can then store your terraform states remotely, as in Scaleway s3. (free offer for the first 75 GB, storage and bandwidth).
 
-```
+```HCL
 terraform {
   backend "s3" {
     bucket      = "your-bucket-name"
@@ -73,7 +73,7 @@ terraform {
 
 You will also be able to integrate terraform directly into your pipeline. Here is an example of an internship for `gitlab_ci.yml`. These lines allow to run the tests, only if the terraform file changes and if it is submitted on master.
 These lines will have to be adapted to your use.
-```
+```yaml
 image: golang:latest
 
 variables:
@@ -98,9 +98,12 @@ before_script:
     - terraform init
 
 stages:
+  # [...]
   - validate
   - plan
   - apply
+
+# [...]
 
 validate:
   stage: validate
@@ -153,7 +156,7 @@ For that look the `main.tf` content file, for loading modules.
 
 In this file we see, the provider configuration (other cloud provider, is not implemented yet)
 
-```
+```HCL
 provider "scaleway" {
   access_key = var.scw_api_key
   secret_key = var.scw_secret_key
@@ -166,7 +169,7 @@ provider "scaleway" {
 Note: the scaleway token is trasmited by environment variable
 
 
-```
+```HCL
 module "database" {                       // Name of pool type
   source = "./modules/replicator"         // The base module for all pool type
   module_name = "database"                // Name of module again, if someone knows how to use a module name var
@@ -184,11 +187,11 @@ module "database" {                       // Name of pool type
   }
 }
 
-'[...]'
+# [...]
 ```
 
 Content file `terraform.tfvars`
-```
+```HCL
 # scw region
 scw_region = "fr-par"
 
@@ -210,7 +213,7 @@ keypath = "~/.ssh/deployment"
 service = {
   "${service_name}" = { # quoted for exposed vars, need remove this "${}"
     networks = {
-       hosted = ["x", "y"]
+      hosted = ["x", "y"]
       linked = ["z"]
     }
     install = [ # apt-get update is not required
@@ -220,7 +223,7 @@ service = {
       "service what-you-want start"
     ]
   }
-  #[...]
+  # [...]
 }
 # networks
 networks = {
@@ -231,7 +234,7 @@ networks = {
         port = 80
         interface = "address|public|address|or real ip 123.45.67.89/32"
       },
-      #[...]
+      # [...]
     ]
     in = []
     out = []
@@ -242,7 +245,7 @@ networks = {
 
 ## Define your infrastructure
 The infrastructure is required for discribe your node type (beacause it's scalable), and what service are installed on them.
-```
+```HCL
 infra = {
   proxy = {                  # infra pool type name, it's a segmentation for scale
     scale = 1                # Number of node for this type
@@ -251,13 +254,13 @@ infra = {
     type = "DEV1-S"          # The commercial instance type, look the scaleway instance catalog
     services = [ "nginx" ]   # The service you want to deploy on this server
   },
-  [...]
+  # [...]
 }
 ```
 
 ## Define the networks for your services
 The service it's required, for link hardware and network. When you write in `infra.*.service["x"]`, `x` is a service and it's necessary to describe, what network is used by this service. The distinction is required between `linked` and `hosted` network for know if your service is a `psql` or is a soft who `use psql`. 
-```
+```HCL
 services = {
   nginx = {
     networks = {
@@ -266,7 +269,7 @@ services = {
       linked = ["web", "ssh_private"]    # this service is linked with other services
     }
   }
-  [...]
+  # [...]
 }
 ```
 
@@ -274,7 +277,7 @@ services = {
 
 You need to describe the network by service, with that you can use different service in single instance, and in the futur, you can move your service to the other pool.
 
-```
+```HCL
 networks = {
   public = {
     all = [                     # use by nginx, it's for internet expose
@@ -303,8 +306,14 @@ networks = {
     in = []
     out = []
   },
-  database =    { ... },
-  ssh_public =  { ... },
-  ssh_private = { ... ],
+  database =    {
+   # [...]
+  },
+  ssh_public =  {
+    # [...]
+  },
+  ssh_private = {
+    # [...]
+  },
 }
 ```
