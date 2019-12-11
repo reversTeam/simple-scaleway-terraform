@@ -45,18 +45,28 @@ services = {
       hosted = ["public", "ssh_public"]
       linked = ["web", "ssh_private"]
     }
+    install = [
+      "apt-get install -y nginx",
+    ]
+    run = [
+      "/etc/init.d/nginx start"
+    ]
   }
   wordpress = {
     networks = {
       hosted = ["web", "ssh_private"]
       linked = ["database"]
     }
+    install = []
+    run = []
   }
   psql = {
     networks = {
       hosted = ["database", "ssh_private"]
       linked = []
     }
+    install = []
+    run = []
   }
 
 }

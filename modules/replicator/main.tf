@@ -1,5 +1,15 @@
 locals {
   conf = var.infra[var.module_name]
+  install_command = flatten([
+    for service in local.conf.services : [
+      var.services[service].install
+    ]
+  ])
+  run_command = flatten([
+    for service in local.conf.services : [
+      var.services[service].run
+    ]
+  ])
 }
 
 resource "scaleway_instance_ip" "ip" {
@@ -27,6 +37,24 @@ resource "scaleway_instance_server" "instances" {
     user        = "root"
     private_key = file(var.keypath)
     host        = self.public_ip
+  }
+
+  # install command
+  provisioner "remote-exec" {
+    inline = [
+      "rm /var/lib/apt/lists/lock",
+      "apt-get update"
+    ]
+  }
+
+  # install command
+  provisioner "remote-exec" {
+    inline = local.install_command
+  }
+
+  # run command
+  provisioner "remote-exec" {
+    inline = local.run_command
   }
 
   security_group_id = scaleway_security_group.security_group.id

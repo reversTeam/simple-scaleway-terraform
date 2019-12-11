@@ -44,6 +44,8 @@ variable "services" {
       hosted = list(string)
       linked = list(string)
     })
+    install = list(string)
+    run = list(string)
   }))
 }
 

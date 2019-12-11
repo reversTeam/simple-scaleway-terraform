@@ -35,9 +35,11 @@ variable "infra" {
 variable "services" {
   type = map(object({
     networks = object({
-        hosted = list(string)
-        linked = list(string)
+      hosted = list(string)
+      linked = list(string)
     })
+    install = list(string)
+    run = list(string)
   }))
 }
 

@@ -213,6 +213,12 @@ service = {
        hosted = ["x", "y"]
       linked = ["z"]
     }
+    install = [ # apt-get update is not required
+      "apt-get install -y what-you-want"
+    ]
+    run = [
+      "service what-you-want start"
+    ]
   }
   #[...]
 }
