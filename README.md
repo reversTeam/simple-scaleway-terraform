@@ -235,6 +235,7 @@ networks = {
       {
         action = "accept|drop"
         port = 80
+        protocol = "UDP"
         interface = "address|public|address|or real ip 123.45.67.89/32"
       },
       # [...]
@@ -289,11 +290,13 @@ networks = {
         action = "accept"      # accept connexion, drop it's possible
         port = 80              # the port used for the service
         interface = "address"  # Interface address == 0.0.0.0/0, public for public ip, private
+        protocol = "TCP"       # protocol do you want use (UDP, TCP, ICMP)
       },
       {
         action = "accept"
         port = 443
         interface = "address"
+        protocol = "TCP"
       }
     ]
     in = []                    # if you want to drop or accept only for the inbounding

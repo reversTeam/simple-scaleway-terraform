@@ -28,6 +28,12 @@ variable "keypath" {
   default = "~/.ssh/deployment"
 }
 
+variable "common_networks" {
+  type = list(string)
+  default = []
+}
+
+
 variable "infra" {
   type = map(object({
     scale = number
@@ -55,16 +61,19 @@ variable "networks" {
       action = string
       port = number
       interface = string
+      protocol = string
     }))
     in = list(object({
       action = string
       port = number
       interface = string
+      protocol = string
     }))
     out = list(object({
       action = string
       port = number
       interface = string
+      protocol = string
     }))
   }))
 }

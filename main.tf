@@ -19,6 +19,8 @@ module "database" {
   networks = var.networks
   keypath = var.keypath
 
+  common_networks = var.common_networks
+
   pools = {
     web = module.web.nodes
     proxy = module.database.nodes
@@ -37,6 +39,8 @@ module "proxy" {
   networks = var.networks
   keypath = var.keypath
 
+  common_networks = var.common_networks
+
   pools = {
     web = module.web.nodes
     database = module.database.nodes
@@ -54,6 +58,8 @@ module "web" {
   services = var.services
   networks = var.networks
   keypath = var.keypath
+
+  common_networks = var.common_networks
 
   pools = {
     database = module.database.nodes

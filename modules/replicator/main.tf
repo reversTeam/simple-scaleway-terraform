@@ -14,14 +14,14 @@ locals {
 
 resource "scaleway_instance_ip" "ip" {
   count = local.conf.public_ip ? local.conf.scale : 0
-  server_id = scaleway_instance_server.instances[count.index].id
 }
 
-resource "scaleway_security_group" "security_group" {
+resource "scaleway_security_group" "run" {
   name = "${var.project}-${var.module_name}-${var.region}-c${var.cluster}"
-  description = "Allow all network configuration for ${var.cluster}"
-  inbound_default_policy  = "accept"
-  outbound_default_policy = "accept"
+  description = "Allow all network configuration for c${var.cluster}"
+  inbound_default_policy  = "drop"
+  outbound_default_policy = "drop"
+  stateful = true
 }
 
 resource "scaleway_instance_server" "instances" {
@@ -32,33 +32,45 @@ resource "scaleway_instance_server" "instances" {
 
   tags = []
 
+  security_group_id = scaleway_security_group.run.id
+  ip_id = local.conf.public_ip ? scaleway_instance_ip.ip[count.index].id : null
+}
+
+resource "null_resource" "install" {
+  count = local.conf.scale
+  depends_on = [scaleway_security_group_rule.self_inbound]
   connection {
     type        = "ssh"
     user        = "root"
     private_key = file(var.keypath)
-    host        = self.public_ip
+    host        = local.conf.public_ip ? scaleway_instance_ip.ip[count.index].address : scaleway_instance_server.instances[count.index].public_ip
   }
 
   # install command
   provisioner "remote-exec" {
-    inline = [
-      "rm /var/lib/apt/lists/lock",
-      "apt-get update"
-    ]
+    inline = concat(
+      [ "apt-get update" ],
+      local.install_command
+    )
   }
 
-  # install command
-  provisioner "remote-exec" {
-    inline = local.install_command
-  }
+}
 
+resource "null_resource" "run" {
+  count = local.conf.scale
+  depends_on = [null_resource.install]
+  connection {
+    type        = "ssh"
+    user        = "root"
+    private_key = file(var.keypath)
+    host        = local.conf.public_ip ? scaleway_instance_ip.ip[count.index].address : scaleway_instance_server.instances[count.index].public_ip
+  }
   # run command
   provisioner "remote-exec" {
     inline = local.run_command
   }
-
-  security_group_id = scaleway_security_group.security_group.id
 }
+
 
 output "address" {
   value = scaleway_instance_ip.ip.*.address
