@@ -13,26 +13,30 @@ cluster = 1
 # ssh key path without passphrase
 keypath = "~/.ssh/deployment"
 
+# common networks for simplify install process and other
+# the three networks it's required for run remote cmd and apt-get update
+common_networks = ["ssh_public", "dns", "public"]
+
 # define your infrastructure
 infra = {
   proxy = {
     scale = 1
     public_ip = true
-    image = "b381b2bf-804a-4b12-91f6-9f4ff273462f"
+    image = "1ec3f179-5b05-408f-a8b3-344e4d8d22d9"
     type = "DEV1-S"
-    services = [ "nginx" ]
+    services = [ "nginx"]
   },
   web = {
-    scale = 0
+    scale = 1
     public_ip = false
-    image = "b381b2bf-804a-4b12-91f6-9f4ff273462f"
+    image = "1ec3f179-5b05-408f-a8b3-344e4d8d22d9"
     type = "DEV1-S"
-    services = [ "wordpress" ] 
+    services = [ "wordpress" ]
   },
   database = {
-    scale = 0
+    scale = 1
     public_ip = false
-    image = "b381b2bf-804a-4b12-91f6-9f4ff273462f"
+    image = "1ec3f179-5b05-408f-a8b3-344e4d8d22d9"
     type = "DEV1-S"
     services = [ "psql" ]
   },
@@ -42,8 +46,8 @@ infra = {
 services = {
   nginx = {
     networks = {
-      hosted = ["public", "ssh_public"]
-      linked = ["web", "ssh_private"]
+      hosted = ["public"]
+      linked = ["web"]
     }
     install = [
       "apt-get install -y nginx",
@@ -54,18 +58,35 @@ services = {
   }
   wordpress = {
     networks = {
-      hosted = ["web", "ssh_private"]
+      hosted = ["web"]
       linked = ["database"]
     }
-    install = []
+    install = [
+      "apt install -y apache2",
+      "wget https://codeload.github.com/WordPress/WordPress/zip/master",
+      "unzip master",
+      "rm -rf /var/www/html",
+      "mv WordPress-master /var/www/html",
+      "sed -i 's/Listen 80/Listen 0.0.0.0:8080/g' /etc/apache2/ports.conf",
+      "sed -i 's/:80/:8080/g' /etc/apache2/sites-available/000-default.conf",
+      "service apache2 restart",
+
+    ]
     run = []
   }
   psql = {
     networks = {
-      hosted = ["database", "ssh_private"]
+      hosted = ["database"]
       linked = []
     }
-    install = []
+    install = [
+      "export DEBIAN_FRONTEND=noninteractive",
+      "apt install -y postgresql",
+      "su - postgres -c \"psql -U postgres -d postgres -c \\\"alter user postgres with password 'YouNeedToModifiedThatPassword';\\\"\"",
+      "echo 'host    all             all             0.0.0.0/0               md5' >> /etc/postgresql/10/main/pg_hba.conf",
+      "echo \"listen_addresses = '0.0.0.0'\" >> /etc/postgresql/10/main/postgresql.conf",
+      "/etc/init.d/postgresql restart",
+    ]
     run = []
   }
 
@@ -73,16 +94,36 @@ services = {
 
 ## define each network
 networks = {
+  dns = {
+    all = [
+      {
+        action = "accept"
+        port = 53
+        protocol = "TCP"
+        interface = "address"
+      },
+      {
+        action = "accept"
+        port = 53
+        protocol = "UDP"
+        interface = "address"
+      }
+    ]
+    in = []
+    out = []
+  }
   public = {
     all = [
       {
         action = "accept"
         port = 80
+        protocol = "TCP"
         interface = "address"
       },
       {
         action = "accept"
         port = 443
+        protocol = "TCP"
         interface = "address"
       }
     ]
@@ -94,6 +135,7 @@ networks = {
       {
         action = "accept"
         port = 8080
+        protocol = "TCP"
         interface = "private"
       }
     ]
@@ -105,6 +147,7 @@ networks = {
       {
         action = "accept"
         port = 5432
+        protocol = "TCP"
         interface = "private"
       } 
     ]
@@ -116,6 +159,7 @@ networks = {
       {
         action = "accept"
         port = 22
+        protocol = "TCP"
         interface = "address"
       } 
     ]
@@ -127,6 +171,7 @@ networks = {
       {
         action = "accept"
         port = 22
+        protocol = "TCP"
         interface = "private"
       } 
     ]
