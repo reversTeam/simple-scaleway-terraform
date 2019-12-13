@@ -14,7 +14,6 @@ locals {
 
 resource "scaleway_instance_ip" "ip" {
   count = local.conf.public_ip ? local.conf.scale : 0
-  server_id = scaleway_instance_server.instances[count.index].id
 }
 
 resource "scaleway_security_group" "run" {
@@ -34,6 +33,7 @@ resource "scaleway_instance_server" "instances" {
   tags = []
 
   security_group_id = scaleway_security_group.run.id
+  ip_id = local.conf.public_ip ? scaleway_instance_ip.ip[count.index].id : null
 }
 
 resource "null_resource" "install" {
