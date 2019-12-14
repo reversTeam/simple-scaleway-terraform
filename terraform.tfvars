@@ -28,7 +28,7 @@ infra = {
   },
   web = {
     scale = 1
-    public_ip = true
+    public_ip = false
     image = "1ec3f179-5b05-408f-a8b3-344e4d8d22d9"
     type = "DEV1-S"
     services = [ "wordpress" ]
@@ -38,7 +38,7 @@ infra = {
     public_ip = true
     image = "1ec3f179-5b05-408f-a8b3-344e4d8d22d9"
     type = "DEV1-S"
-    services = [ "psql" ]
+    services = [ "mysql" ]
   },
 }
 
@@ -69,23 +69,28 @@ services = {
       "mv WordPress-master /var/www/html",
       "sed -i 's/Listen 80/Listen 0.0.0.0:8080/g' /etc/apache2/ports.conf",
       "sed -i 's/:80/:8080/g' /etc/apache2/sites-available/000-default.conf",
+      "apt install libapache2-mod-php",
+      "apt-get install php7.2-mysql",
       "service apache2 restart",
 
     ]
     run = []
   }
-  psql = {
+  mysql = {
     networks = {
       hosted = ["database"]
       linked = []
     }
     install = [
-      "export DEBIAN_FRONTEND=noninteractive",
-      "apt install -y postgresql",
-      "su - postgres -c \"psql -U postgres -d postgres -c \\\"alter user postgres with password 'YouNeedToModifiedThatPassword';\\\"\"",
-      "echo 'host    all             all             0.0.0.0/0               md5' >> /etc/postgresql/10/main/pg_hba.conf",
-      "echo \"listen_addresses = '0.0.0.0'\" >> /etc/postgresql/10/main/postgresql.conf",
-      "/etc/init.d/postgresql restart",
+      "apt-get update && apt-get upgrade -y",
+      "echo 'Europe/Paris' > /etc/timezone",
+      "echo 'mysql-server-5.6 mysql-server/root_password password root' | debconf-set-selections",
+      "echo 'mysql-server-5.6 mysql-server/root_password_again password root' | debconf-set-selections",
+      "apt-get -y install mysql-server",
+      "mysql_secure_installation",
+      "sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mysql/mysql.conf.d/mysqld.cnf",
+      "mysql -uroot -proot -e 'USE mysql; UPDATE `user` SET `Host`=\"%\" WHERE `User`=\"root\" AND `Host`=\"localhost\"; DELETE FROM `user` WHERE `Host` != \"%\" AND `User`=\"root\"; FLUSH PRIVILEGES;'",
+      "service mysql restart",
     ]
     run = []
   }
@@ -146,7 +151,7 @@ networks = {
     all = [
       {
         action = "accept"
-        port = 5432
+        port = 3306
         protocol = "TCP"
         interface = "private"
       } 
