@@ -14,9 +14,10 @@ locals {
   linked_networks = flatten([ for i in local.conf.services : var.services[i].networks.linked ])
   hosted_networks = flatten([ for i in local.conf.services : var.services[i].networks.hosted ])
 
+
   services_hosted_all_strict = flatten([
-    for pool in local.pool_networks: [
-      for network in pool.hosted : [
+    for network in local.hosted_networks: [
+      for pool in local.pool_networks: [
         for node in pool.nodes : [
           for rule in var.networks[network].all : {
             action = rule.action
@@ -25,13 +26,13 @@ locals {
             ip = rule.interface == "address" || rule.interface == "public" ? node.public_ip : node.private_ip
           }
         ]
-      ] if contains(local.linked_networks, network)
+      ] if contains(pool.linked, network)
     ]
   ])
 
   services_hosted_inbound_strict = flatten([
-    for pool in local.pool_networks: [
-      for network in pool.hosted : [
+    for network in local.hosted_networks: [
+      for pool in local.pool_networks: [
         for node in pool.nodes : [
           for rule in var.networks[network].out : {
             action = rule.action
@@ -40,13 +41,13 @@ locals {
             ip = rule.interface == "address" || rule.interface == "public" ? node.public_ip : node.private_ip
           }
         ]
-      ] if contains(local.linked_networks, network)
+      ] if contains(pool.linked, network)
     ]
   ])
 
   services_hosted_outbound_strict = flatten([
-    for pool in local.pool_networks: [
-      for network in pool.hosted : [
+    for network in local.hosted_networks: [
+      for pool in local.pool_networks: [
         for node in pool.nodes : [
           for rule in var.networks[network].in : {
             action = rule.action
@@ -55,13 +56,13 @@ locals {
             ip = rule.interface == "address" || rule.interface == "public" ? node.public_ip : node.private_ip
           }
         ]
-      ] if contains(local.linked_networks, network)
+      ] if contains(pool.linked, network)
     ]
   ])
 
   services_linked_all_strict = flatten([
-    for pool in local.pool_networks: [
-      for network in pool.linked : [
+    for network in local.linked_networks: [
+      for pool in local.pool_networks: [
         for node in pool.nodes : [
           for rule in var.networks[network].all : {
             action = rule.action
@@ -70,13 +71,13 @@ locals {
             ip = rule.interface == "address" ? "0.0.0.0/0" : rule.interface == "public" ? node.public_ip : node.private_ip
           }
         ]
-      ] if contains(local.hosted_networks, network)
+      ] if contains(pool.hosted, network)
     ]
   ])
 
   services_linked_inbound_strict = flatten([
-    for pool in local.pool_networks: [
-      for network in pool.linked : [
+    for network in local.linked_networks: [
+      for pool in local.pool_networks: [
         for node in pool.nodes : [
           for rule in var.networks[network].out : {
             action = rule.action
@@ -85,13 +86,13 @@ locals {
             ip = rule.interface == "address" ? "0.0.0.0/0" : rule.interface == "public" ? node.public_ip : node.private_ip
           }
         ]
-      ] if contains(local.hosted_networks, network)
+      ] if contains(pool.hosted, network)
     ]
   ])
 
   services_linked_outbound_strict = flatten([
-    for pool in local.pool_networks: [
-      for network in pool.linked : [
+    for network in local.linked_networks: [
+      for pool in local.pool_networks: [
         for node in pool.nodes : [
           for rule in var.networks[network].in : {
             action = rule.action
@@ -100,12 +101,12 @@ locals {
             ip = rule.interface == "address" ? "0.0.0.0/0" : rule.interface == "public" ? node.public_ip : node.private_ip
           }
         ]
-      ] if contains(local.hosted_networks, network)
+      ] if contains(pool.hosted, network)
     ]
   ])
 
   self_all_strict = flatten([
-    for network in local.self_networks : [
+    for network in var.common_networks : [
       for rule in var.networks[network].all : [
         for k, instance in scaleway_instance_server.instances : {
           action = rule.action

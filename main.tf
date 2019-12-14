@@ -63,6 +63,6 @@ module "web" {
 
   pools = {
     database = module.database.nodes
-    proxy = module.database.nodes
+    proxy = module.proxy.nodes
   }
 }

@@ -24,18 +24,18 @@ infra = {
     public_ip = true
     image = "1ec3f179-5b05-408f-a8b3-344e4d8d22d9"
     type = "DEV1-S"
-    services = [ "nginx"]
+    services = [ "nginx" ]
   },
   web = {
     scale = 1
-    public_ip = false
+    public_ip = true
     image = "1ec3f179-5b05-408f-a8b3-344e4d8d22d9"
     type = "DEV1-S"
     services = [ "wordpress" ]
   },
   database = {
     scale = 1
-    public_ip = false
+    public_ip = true
     image = "1ec3f179-5b05-408f-a8b3-344e4d8d22d9"
     type = "DEV1-S"
     services = [ "psql" ]
