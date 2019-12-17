@@ -105,13 +105,25 @@ networks = {
         action = "accept"
         port = 53
         protocol = "TCP"
-        interface = "address"
+        ip = "address"
       },
       {
         action = "accept"
         port = 53
         protocol = "UDP"
-        interface = "address"
+        ip = "address"
+      },
+      {
+        action = "accept"
+        port = 53
+        protocol = "TCP"
+        ip = "::/0"
+      },
+      {
+        action = "accept"
+        port = 53
+        protocol = "UDP"
+        ip = "::/0"
       }
     ]
     in = []
@@ -123,13 +135,25 @@ networks = {
         action = "accept"
         port = 80
         protocol = "TCP"
-        interface = "address"
+        ip = "address"
       },
       {
         action = "accept"
         port = 443
         protocol = "TCP"
-        interface = "address"
+        ip = "address"
+      },
+      {
+        action = "accept"
+        port = 80
+        protocol = "TCP"
+        ip = "::/0"
+      },
+      {
+        action = "accept"
+        port = 443
+        protocol = "TCP"
+        ip = "::/0"
       }
     ]
     in = []
@@ -141,7 +165,7 @@ networks = {
         action = "accept"
         port = 8080
         protocol = "TCP"
-        interface = "private"
+        ip = "private"
       }
     ]
     in = []
@@ -153,7 +177,7 @@ networks = {
         action = "accept"
         port = 3306
         protocol = "TCP"
-        interface = "private"
+        ip = "private"
       } 
     ]
     in = []
@@ -165,7 +189,7 @@ networks = {
         action = "accept"
         port = 22
         protocol = "TCP"
-        interface = "address"
+        ip = "address"
       } 
     ]
     in = []
@@ -177,7 +201,7 @@ networks = {
         action = "accept"
         port = 22
         protocol = "TCP"
-        interface = "private"
+        ip = "private"
       } 
     ]
     in = []

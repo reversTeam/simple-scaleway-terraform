@@ -23,7 +23,7 @@ locals {
             action = rule.action
             protocol = rule.protocol
             port = rule.port
-            ip = rule.interface == "address" || rule.interface == "public" ? node.public_ip : node.private_ip
+            ip = rule.ip == "address" ? "0.0.0.0/0" : rule.ip == "public" ? node.public_ip : node.private_ip
           }
         ]
       ] if contains(pool.linked, network)
@@ -38,7 +38,7 @@ locals {
             action = rule.action
             protocol = rule.protocol
             port = rule.port
-            ip = rule.interface == "address" || rule.interface == "public" ? node.public_ip : node.private_ip
+            ip = rule.ip == "address" ? "0.0.0.0/0" : rule.ip == "public" ? node.public_ip : node.private_ip
           }
         ]
       ] if contains(pool.linked, network)
@@ -53,7 +53,7 @@ locals {
             action = rule.action
             protocol = rule.protocol
             port = rule.port
-            ip = rule.interface == "address" || rule.interface == "public" ? node.public_ip : node.private_ip
+            ip = rule.ip == "address" ? "0.0.0.0/0" : rule.ip == "public" ? node.public_ip : node.private_ip
           }
         ]
       ] if contains(pool.linked, network)
@@ -68,7 +68,7 @@ locals {
             action = rule.action
             protocol = rule.protocol
             port = rule.port
-            ip = rule.interface == "address" ? "0.0.0.0/0" : rule.interface == "public" ? node.public_ip : node.private_ip
+            ip = rule.ip == "address" ? "0.0.0.0/0" : rule.ip == "public" ? node.public_ip : rule.ip == "private" ? node.private_ip : rule.ip
           }
         ]
       ] if contains(pool.hosted, network)
@@ -83,7 +83,7 @@ locals {
             action = rule.action
             protocol = rule.protocol
             port = rule.port
-            ip = rule.interface == "address" ? "0.0.0.0/0" : rule.interface == "public" ? node.public_ip : node.private_ip
+            ip = rule.ip == "address" ? "0.0.0.0/0" : rule.ip == "public" ? node.public_ip : rule.ip == "private" ? node.private_ip : rule.ip
           }
         ]
       ] if contains(pool.hosted, network)
@@ -98,7 +98,7 @@ locals {
             action = rule.action
             protocol = rule.protocol
             port = rule.port
-            ip = rule.interface == "address" ? "0.0.0.0/0" : rule.interface == "public" ? node.public_ip : node.private_ip
+            ip = rule.ip == "address" ? "0.0.0.0/0" : rule.ip == "public" ? node.public_ip : rule.ip == "private" ? node.private_ip : rule.ip
           }
         ]
       ] if contains(pool.hosted, network)
@@ -106,14 +106,14 @@ locals {
   ])
 
   self_all_strict = flatten([
-    for network in var.common_networks : [
+    for network in local.self_networks : [
       for rule in var.networks[network].all : [
         for k, instance in scaleway_instance_server.instances : {
           action = rule.action
           protocol = rule.protocol
           port = rule.port
-          ip = rule.interface == "address" ? "0.0.0.0/0" : rule.interface == "public" ? instance.public_ip : instance.private_ip
-        } if rule.interface != "address" || (rule.interface == "address" && k == 0)
+          ip = rule.ip == "address" ? "0.0.0.0/0" : rule.ip == "public" ? instance.public_ip : rule.ip == "private" ? instance.private_ip : rule.ip
+        } if rule.ip != "address" || (rule.ip == "address" && k == 0)
       ]
     ] if contains(keys(var.networks), network)
   ])
@@ -125,8 +125,8 @@ locals {
           action = rule.action
           protocol = rule.protocol
           port = rule.port
-          ip = rule.interface == "address" ? "0.0.0.0/0" : rule.interface == "public" ? instance.public_ip : instance.private_ip
-        } if rule.interface != "address" || (rule.interface == "address" && k == 0) 
+          ip = rule.ip == "address" ? "0.0.0.0/0" : rule.ip == "public" ? instance.public_ip : rule.ip == "private" ? instance.private_ip : rule.ip
+        } if rule.ip != "address" || (rule.ip == "address" && k == 0) 
       ]
     ] if contains(keys(var.networks), network)
   ])
@@ -138,8 +138,8 @@ locals {
           action = rule.action
           protocol = rule.protocol
           port = rule.port
-          ip = rule.interface == "address" ? "0.0.0.0/0" : rule.interface == "public" ? instance.public_ip : instance.private_ip
-        } if rule.interface != "address" || (rule.interface == "address" && k == 0)
+          ip = rule.ip == "address" ? "0.0.0.0/0" : rule.ip == "public" ? instance.public_ip : rule.ip == "private" ? instance.private_ip : rule.ip
+        } if rule.ip != "address" || (rule.ip == "address" && k == 0)
       ]
     ] if contains(keys(var.networks), network)
   ])

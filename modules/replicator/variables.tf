@@ -54,19 +54,19 @@ variable "networks" {
       action = string
       port = number
       protocol = string
-      interface = string
+      ip = string
     }))
     in = list(object({
       action = string
       port = number
       protocol = string
-      interface = string
+      ip = string
     }))
     out = list(object({
       action = string
       port = number
       protocol = string
-      interface = string
+      ip = string
     }))
   }))
 }

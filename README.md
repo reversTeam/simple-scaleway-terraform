@@ -210,7 +210,35 @@ cluster = 1
 # ssh key path without passphrase
 keypath = "~/.ssh/deployment"
 
+# hosted by each node of infra definition
+common_networks = ["ssh_private", "dns", "apt"]
+
 # [...]
+
+# infra definition require main.tf declaration
+infra = {
+  proxy = {
+    scale = 1
+    public_ip = true
+    image = "1ec3f179-5b05-408f-a8b3-344e4d8d22d9"
+    type = "DEV1-S"
+    services = [ "nginx" ]
+  },
+  web = {
+    scale = 1
+    public_ip = false
+    image = "1ec3f179-5b05-408f-a8b3-344e4d8d22d9"
+    type = "DEV1-S"
+    services = [ "wordpress" ]
+  },
+  database = {
+    scale = 1
+    public_ip = true
+    image = "1ec3f179-5b05-408f-a8b3-344e4d8d22d9"
+    type = "DEV1-S"
+    services = [ "mysql" ]
+  },
+}
 
 # services
 service = {
@@ -247,6 +275,39 @@ networks = {
 ```
 Normaly you have your a cluster on Scaleway.
 ![Cluster](assets/img/cluster.jpg)
+
+main.tf
+```
+provider "scaleway" {                   # declare your provider (all variables is defined in terraform.tfvars)
+  access_key = var.scw_api_key
+  secret_key = var.scw_secret_key
+  organization_id = var.scw_org_id 
+  zone       = var.scw_zone
+  region     = var.scw_region
+  version = "~> 1.11"
+}
+
+module "proxy" {                       # declare proxy type pool
+  source = "./modules/replicator"      # path to generic module
+  module_name = "proxy"
+  project = var.project
+  cluster = var.cluster
+  region = var.scw_region
+
+  infra = var.infra                     # need to know infra global definition (cf. terraform.tfvars)
+  services = var.services               # need to know service global definition (cf. terraform.tfvars)
+  networks = var.networks               # need to know networks global definition (cf. terraform.tfvars)
+  keypath = var.keypath                 # need to know ssh key path (cf. terraform.tfvars)
+
+  common_networks = var.common_networks
+
+  pools = {
+    web = module.web.nodes              # require for linked network
+    database = module.database.nodes    # require for linked network
+  }
+}
+# [ ... ] other module like web, database
+```
 
 ## Define your infrastructure
 The infrastructure is required for discribe your node type (beacause it's scalable), and what service are installed on them.
